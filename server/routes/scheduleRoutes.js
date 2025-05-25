@@ -7,10 +7,7 @@ const {
      getAllSchedules,
      getScheduleById,
      updateSchedule,
-     deleteSchedule,
-     createHallSchedule,
-     getHallsSchedule,
-     deleteHallSchedule} = require('../models/scheduleModel');
+     deleteSchedule} = require('../models/scheduleModel');
 
 
 function validateRequest(req, res, next) {
@@ -43,12 +40,7 @@ const scheduleValidators = [
     .trim().notEmpty().withMessage('createdBy is required')
 ];
 
-const linkValidators = [
-  body('hallsId')
-    .isInt({ gt: 0 }).withMessage('hallsId must be a positive integer'),
-  body('scheduleId')
-    .isInt({ gt: 0 }).withMessage('scheduleId must be a positive integer')
-];
+
 
 // CREATE
 router.post(
@@ -115,49 +107,6 @@ router.delete(
     asyncHandler(async (req, res) => {
       await deleteSchedule(+req.params.id);
       res.json({ message: 'Schedule deleted successfully' });
-    })
-  );
-
-  /* -----------------------------------------------------------
-                     ENDPOINT Halls_Schedule  
-   --------------------------------------------------------------*/
-
-   // CREATE 
-   router.post(
-     '/halls-schedule',
-     [...linkValidators, validateRequest],
-     asyncHandler(async (req, res) => {
-       const { hallsId, scheduleId } = req.body;
-       await createHallSchedule(hallsId, scheduleId);
-       res.status(201).json({ message: 'halls_Schedule created successfully' });
-     })
-   );
-
-
-// READ ALL 
-router.get(
-    '/halls-schedule',
-    [
-      query('hallsId').optional().isInt({ gt: 0 }),
-      query('scheduleId').optional().isInt({ gt: 0 }), validateRequest
-    ], asyncHandler(async (req, res) => {
-      const { hallsId, scheduleId } = req.query;
-      const links = await getHallsSchedule({
-        hallsId   : hallsId    ? +hallsId    : undefined,
-        scheduleId: scheduleId ? +scheduleId : undefined
-      });
-      res.json({ data: links });
-    })
-  );
-
-  //DELETE
-  router.delete(
-    '/halls-schedule',
-    [...linkValidators, validateRequest],
-    asyncHandler(async (req, res) => {
-      const { hallsId, scheduleId } = req.body;
-      await deleteHallSchedule(hallsId, scheduleId);
-      res.json({ message: 'Link deleted successfully' });
     })
   );
   
