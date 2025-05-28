@@ -1,31 +1,107 @@
 const sql = require('mssql/msnodesqlv8');
 const dbConfig = require('../config/db');
 
+function formatDateTime(date) {
+  if (!date) return null;
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+}
+
+function prepareTime(time) {
+  if (!time) return null;
+
+  if (time instanceof Date) {
+    return time.toTimeString().slice(0, 8);
+  }
+
+  if (typeof time === 'string') {
+    if (time.length === 5) return `${time}:00`;
+    if (time.length === 8) return time;
+  }
+
+  return time;
+}
+
 // CREATE
 async function createTicket(ticket) {
+  const {
+    date, time, seatCount, seats,
+    paymentMethod, status, qr_path,
+    discountId, hallsId, scheduleId, clientId
+  } = ticket;
+
   try {
     await sql.connect(dbConfig);
-    const request = new sql.Request();
-    request.input('date', sql.Date, ticket.date);
-    request.input('time', sql.Time, ticket.time);
-    request.input('seatCount', sql.Int, ticket.seatCount);
-    request.input('seats', sql.NVarChar(100), ticket.seats);
-    request.input('paymentMethod', sql.NVarChar(50), ticket.paymentMethod);
-    request.input('status', sql.NVarChar(50), ticket.status);
-    request.input('qr_path', sql.NVarChar(255), ticket.qr_path);
-    request.input('discountId', sql.Int, ticket.discountId);
-    request.input('hallsId', sql.Int, ticket.hallsId);
-    request.input('scheduleId', sql.Int, ticket.scheduleId);
-    request.input('movieId', sql.Int, ticket.movieId);
-    request.input('adminId', sql.Int, ticket.adminId);
-    request.input('clientId', sql.Int, ticket.clientId);
-    await request.query(`
-      INSERT INTO Tickets (date, time, seatCount, seats, paymentMethod, status, qr_path, discountId, hallsId, scheduleId, movieId, adminId, clientId)
-      VALUES (@date, @time, @seatCount, @seats, @paymentMethod, @status, @qr_path, @discountId, @hallsId, @scheduleId, @movieId, @adminId, @clientId)
-    `);
+
+    // Kontrollo nëse halls_schedule_movie ekziston për hallsId dhe scheduleId
+    const checkHallsSchedule = await new sql.Request()
+      .input('hallsId', sql.Int, hallsId)
+      .input('scheduleId', sql.Int, scheduleId)
+      .query(`
+        SELECT * FROM Halls_Schedule_Movie
+        WHERE hallsId = @hallsId AND scheduleId = @scheduleId
+      `);
+
+    if (checkHallsSchedule.recordset.length === 0) {
+      throw new Error(`Nuk ekziston lidhja hallsId=${hallsId} me scheduleId=${scheduleId} në Halls_Schedule_Movie`);
+    }
+
+    // Kontrollo nëse klienti ekziston (clientId mund të jetë null)
+    if (clientId !== null && clientId !== undefined) {
+      const checkClient = await new sql.Request()
+        .input('clientId', sql.Int, clientId)
+        .query('SELECT * FROM Client WHERE clientId = @clientId');
+
+      if (checkClient.recordset.length === 0) {
+        throw new Error(`Klienti me clientId=${clientId} nuk ekziston`);
+      }
+    }
+
+    // Kontrollo nëse zbritja ekziston vetëm nëse discountId nuk është null
+    if (discountId !== null && discountId !== undefined) {
+      const checkDiscount = await new sql.Request()
+        .input('discountId', sql.Int, discountId)
+        .query('SELECT * FROM Discounts WHERE discountId = @discountId');
+
+      if (checkDiscount.recordset.length === 0) {
+        throw new Error(`Zbritja me discountId=${discountId} nuk ekziston`);
+      }
+    }
+
+    // Insert biletën
+    await new sql.Request()
+      .input('date', sql.Date, new Date(date))
+      .input('time', sql.Time, prepareTime(time))
+      .input('seatCount', sql.Int, seatCount)
+      .input('seats', sql.NVarChar(100), seats)
+      .input('paymentMethod', sql.NVarChar(50), paymentMethod)
+      .input('status', sql.NVarChar(50), status)
+      .input('qr_path', sql.NVarChar(255), qr_path)
+      .input('discountId', sql.Int, discountId)
+      .input('hallsId', sql.Int, hallsId)
+      .input('scheduleId', sql.Int, scheduleId)
+      .input('clientId', sql.Int, clientId)
+      .query(`
+        INSERT INTO Tickets (
+          date, time, seatCount, seats,
+          paymentMethod, status, qr_path,
+          discountId, hallsId, scheduleId, clientId
+        )
+        VALUES (
+          @date, @time, @seatCount, @seats,
+          @paymentMethod, @status, @qr_path,
+          @discountId, @hallsId, @scheduleId, @clientId
+        )
+      `);
+
     return { message: 'Ticket created successfully' };
   } catch (err) {
-    console.error('Error in createTicket:', err);
+    console.error('Error creating ticket:', err);
     throw err;
   }
 }
@@ -34,10 +110,16 @@ async function createTicket(ticket) {
 async function getAllTickets() {
   try {
     await sql.connect(dbConfig);
-    const result = await new sql.Request().query('SELECT * FROM Tickets');
-    return result.recordset;
+    const result = await new sql.Request()
+      .query('SELECT * FROM Tickets');
+
+    return result.recordset.map(ticket => ({
+      ...ticket,
+      date: formatDateTime(ticket.date),
+      time: prepareTime(ticket.time)
+    }));
   } catch (err) {
-    console.error('Error in getAllTickets:', err);
+    console.error('Error fetching tickets:', err);
     throw err;
   }
 }
@@ -49,80 +131,110 @@ async function getTicketById(ticketId) {
     const result = await new sql.Request()
       .input('ticketId', sql.Int, ticketId)
       .query('SELECT * FROM Tickets WHERE ticketId = @ticketId');
-    return result.recordset[0];
+
+    if (result.recordset.length === 0) {
+      throw new Error('Ticket not found');
+    }
+
+    const ticket = result.recordset[0];
+    ticket.date = formatDateTime(ticket.date);
+    ticket.time = prepareTime(ticket.time);
+    return ticket;
   } catch (err) {
-    console.error('Error in getTicketById:', err);
+    console.error('Error fetching ticket by ID:', err);
     throw err;
   }
 }
 
 // UPDATE
-async function updateTicket(ticketId, updates) {
+async function updateTicket(ticketId, updates, adminId) {
+  const {
+    date, time, seatCount, seats,
+    paymentMethod, status, qr_path,
+    discountId, hallsId, scheduleId, clientId
+  } = updates;
+
   try {
     await sql.connect(dbConfig);
-    const setClauses = [];
-    const request = new sql.Request();
-    request.input('ticketId', sql.Int, ticketId);
-    if (updates.date !== undefined) {
-      setClauses.push('date = @date');
-      request.input('date', sql.Date, updates.date);
+
+    const now = new Date();
+    const updatedBy = adminId ? `Admin_${adminId}` : 'System';
+
+    // Kontrollo nëse halls_schedule_movie ekziston për hallsId dhe scheduleId
+    const checkHallsSchedule = await new sql.Request()
+      .input('hallsId', sql.Int, hallsId)
+      .input('scheduleId', sql.Int, scheduleId)
+      .query(`
+        SELECT * FROM Halls_Schedule_Movie
+        WHERE hallsId = @hallsId AND scheduleId = @scheduleId
+      `);
+
+    if (checkHallsSchedule.recordset.length === 0) {
+      throw new Error(`Nuk ekziston lidhja hallsId=${hallsId} me scheduleId=${scheduleId} në Halls_Schedule_Movie`);
     }
-    if (updates.time !== undefined) {
-      setClauses.push('time = @time');
-      request.input('time', sql.Time, updates.time);
+
+    // Kontrollo nëse klienti ekziston (clientId mund të jetë null)
+    if (clientId !== null && clientId !== undefined) {
+      const checkClient = await new sql.Request()
+        .input('clientId', sql.Int, clientId)
+        .query('SELECT * FROM Client WHERE clientId = @clientId');
+
+      if (checkClient.recordset.length === 0) {
+        throw new Error(`Klienti me clientId=${clientId} nuk ekziston`);
+      }
     }
-    if (updates.seatCount !== undefined) {
-      setClauses.push('seatCount = @seatCount');
-      request.input('seatCount', sql.Int, updates.seatCount);
+
+    // Kontrollo nëse zbritja ekziston vetëm nëse discountId nuk është null
+    if (discountId !== null && discountId !== undefined) {
+      const checkDiscount = await new sql.Request()
+        .input('discountId', sql.Int, discountId)
+        .query('SELECT * FROM Discounts WHERE discountId = @discountId');
+
+      if (checkDiscount.recordset.length === 0) {
+        throw new Error(`Zbritja me discountId=${discountId} nuk ekziston`);
+      }
     }
-    if (updates.seats !== undefined) {
-      setClauses.push('seats = @seats');
-      request.input('seats', sql.NVarChar(100), updates.seats);
+
+    // 1. Update the ticket
+    await new sql.Request()
+      .input('ticketId', sql.Int, ticketId)
+      .input('date', sql.Date, new Date(date))
+      .input('time', sql.Time, prepareTime(time))
+      .input('seatCount', sql.Int, seatCount)
+      .input('seats', sql.NVarChar(100), seats)
+      .input('paymentMethod', sql.NVarChar(50), paymentMethod)
+      .input('status', sql.NVarChar(50), status)
+      .input('qr_path', sql.NVarChar(255), qr_path)
+      .input('discountId', sql.Int, discountId)
+      .input('hallsId', sql.Int, hallsId)
+      .input('scheduleId', sql.Int, scheduleId)
+      .input('clientId', sql.Int, clientId)
+      .input('updatedAt', sql.DateTime, now)
+      .input('updatedBy', sql.NVarChar(100), updatedBy)
+      .query(`
+        UPDATE Tickets SET
+          date = @date, time = @time, seatCount = @seatCount, seats = @seats,
+          paymentMethod = @paymentMethod, status = @status, qr_path = @qr_path,
+          discountId = @discountId, hallsId = @hallsId, scheduleId = @scheduleId,
+          clientId = @clientId, updatedAt = @updatedAt, updatedBy = @updatedBy
+        WHERE ticketId = @ticketId
+      `);
+
+    // 2. Log admin action in Tickets_Admin if adminId is provided
+    if (adminId) {
+      await new sql.Request()
+        .input('adminId', sql.Int, adminId)
+        .input('ticketId', sql.Int, ticketId)
+        .input('actionDate', sql.DateTime, now)
+        .query(`
+          INSERT INTO Tickets_Admin (adminId, ticketId, actionDate)
+          VALUES (@adminId, @ticketId, @actionDate)
+        `);
     }
-    if (updates.paymentMethod !== undefined) {
-      setClauses.push('paymentMethod = @paymentMethod');
-      request.input('paymentMethod', sql.NVarChar(50), updates.paymentMethod);
-    }
-    if (updates.status !== undefined) {
-      setClauses.push('status = @status');
-      request.input('status', sql.NVarChar(50), updates.status);
-    }
-    if (updates.qr_path !== undefined) {
-      setClauses.push('qr_path = @qr_path');
-      request.input('qr_path', sql.NVarChar(255), updates.qr_path);
-    }
-    if (updates.discountId !== undefined) {
-      setClauses.push('discountId = @discountId');
-      request.input('discountId', sql.Int, updates.discountId);
-    }
-    if (updates.hallsId !== undefined) {
-      setClauses.push('hallsId = @hallsId');
-      request.input('hallsId', sql.Int, updates.hallsId);
-    }
-    if (updates.scheduleId !== undefined) {
-      setClauses.push('scheduleId = @scheduleId');
-      request.input('scheduleId', sql.Int, updates.scheduleId);
-    }
-    if (updates.movieId !== undefined) {
-      setClauses.push('movieId = @movieId');
-      request.input('movieId', sql.Int, updates.movieId);
-    }
-    if (updates.adminId !== undefined) {
-      setClauses.push('adminId = @adminId');
-      request.input('adminId', sql.Int, updates.adminId);
-    }
-    if (updates.clientId !== undefined) {
-      setClauses.push('clientId = @clientId');
-      request.input('clientId', sql.Int, updates.clientId);
-    }
-    if (setClauses.length === 0) {
-      return { message: 'Nothing to update' };
-    }
-    const sqlString = `UPDATE Tickets SET ${setClauses.join(', ')} WHERE ticketId = @ticketId`;
-    await request.query(sqlString);
+
     return { message: 'Ticket updated successfully' };
   } catch (err) {
-    console.error('Error in updateTicket:', err);
+    console.error('Error updating ticket:', err);
     throw err;
   }
 }
@@ -131,12 +243,20 @@ async function updateTicket(ticketId, updates) {
 async function deleteTicket(ticketId) {
   try {
     await sql.connect(dbConfig);
+
+    // Delete related entries in Tickets_Admin
+    await new sql.Request()
+      .input('ticketId', sql.Int, ticketId)
+      .query('DELETE FROM Tickets_Admin WHERE ticketId = @ticketId');
+
+    // Delete ticket itself
     await new sql.Request()
       .input('ticketId', sql.Int, ticketId)
       .query('DELETE FROM Tickets WHERE ticketId = @ticketId');
+
     return { message: 'Ticket deleted successfully' };
   } catch (err) {
-    console.error('Error in deleteTicket:', err);
+    console.error('Error deleting ticket:', err);
     throw err;
   }
 }
@@ -146,5 +266,5 @@ module.exports = {
   getAllTickets,
   getTicketById,
   updateTicket,
-  deleteTicket
+  deleteTicket,
 };
