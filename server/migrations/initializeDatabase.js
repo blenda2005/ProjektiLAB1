@@ -1,4 +1,4 @@
-const sql = require('mssql'); // Importo sql veçmas
+const sql = require('mssql'); // Importo sql veÃ§mas
 const dbConfig = require('../config/db'); // Merr config-un
 
 async function initializeDatabase() {
@@ -46,18 +46,18 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Schedule u krijua me sukses!');
 
-        // 4. Halls_Schedule
-        await pool.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Halls_Schedule' AND xtype='U')
-            CREATE TABLE Halls_Schedule (
-                hallsId INT NOT NULL,
-                scheduleId INT NOT NULL,
-                PRIMARY KEY (hallsId, scheduleId),
-                FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
-                FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE
-            )
-        `);
-        console.log('Tabela Halls_Schedule u krijua me sukses!');
+       // // 4. Halls_Schedule
+       // await pool.request().query(`
+       //     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Halls_Schedule' AND xtype='U')
+       //     CREATE TABLE Halls_Schedule (
+       //         hallsId INT NOT NULL,
+       //         scheduleId INT NOT NULL,
+       //         PRIMARY KEY (hallsId, scheduleId),
+       //         FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
+       //         FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE
+       //     )
+       // `);
+       // console.log('Tabela Halls_Schedule u krijua me sukses!');
 
         // 5. Movie
         await pool.request().query(`
@@ -89,8 +89,9 @@ async function initializeDatabase() {
                 hallsId INT NOT NULL,
                 scheduleId INT NOT NULL,
                 movieId INT NOT NULL,
-                PRIMARY KEY (hallsId, scheduleId, movieId),
-                FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule(hallsId, scheduleId) ON DELETE CASCADE,
+                PRIMARY KEY (hallsId, scheduleId),
+                FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
+                FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE,
                 FOREIGN KEY (movieId) REFERENCES Movie(movieId) ON DELETE CASCADE
             )
         `);
@@ -101,6 +102,7 @@ async function initializeDatabase() {
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
             CREATE TABLE Users (
             userId INT PRIMARY KEY IDENTITY(1,1),
+            username NVARCHAR(50) NOT NULL UNIQUE,
             firstName NVARCHAR(50) NOT NULL,
             lastName NVARCHAR(50) NOT NULL,
             gender NVARCHAR(10),
@@ -108,9 +110,9 @@ async function initializeDatabase() {
             address NVARCHAR(100),
             zipCode NVARCHAR(10),
             city NVARCHAR(50),
-            registration_date DATETIME DEFAULT GETDATE(),
             phoneNumber NVARCHAR(20) UNIQUE,
             passwordHash VARBINARY(255) NOT NULL,
+            role NVARCHAR(20) NOT NULL CHECK (role IN ('Admin', 'Client')),
             createdAt DATETIME DEFAULT GETDATE(),
             createdBy NVARCHAR(100),
             updatedAt DATETIME,
@@ -179,12 +181,9 @@ async function initializeDatabase() {
             discountId INT null,
             hallsId INT NOT NULL,
             scheduleId INT NOT NULL,
-            movieId INT NOT NULL,
-            adminId INT NULL,
             clientId INT NULL,
             FOREIGN KEY (discountId) REFERENCES Discounts(discountId),
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId),
-            FOREIGN KEY (adminId) REFERENCES Admin(adminId),
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId),
             FOREIGN KEY (clientId) REFERENCES Client(clientId)
             )
         `);
@@ -203,13 +202,12 @@ async function initializeDatabase() {
             status NVARCHAR(50) NOT NULL DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive')),
             hallsId INT,
             scheduleId INT,
-            movieId INT,
             discountId INT,
             createdAt DATETIME DEFAULT GETDATE(),
             createdBy NVARCHAR(100),
             updatedAt DATETIME,
             updatedBy NVARCHAR(100),
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId) ON DELETE CASCADE,
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId) ON DELETE CASCADE,
             FOREIGN KEY (discountId) REFERENCES Discounts(discountId) ON DELETE SET NULL
             )
         `);
@@ -249,9 +247,8 @@ async function initializeDatabase() {
             clientId INT,
             hallsId INT,
             scheduleId INT,
-            movieId INT,
             FOREIGN KEY (clientId) REFERENCES Client(clientId) ON DELETE CASCADE,
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId) ON DELETE CASCADE
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId) ON DELETE CASCADE
 
             )
         `);
@@ -290,7 +287,7 @@ async function initializeDatabase() {
 
 
     } catch (err) {
-        console.error('Gabim gjatë inicializimit të databazës:', err.message);
+        console.error('Gabim gjatÃ« inicializimit tÃ« databazÃ«s:', err.message);
     }
 }
 
