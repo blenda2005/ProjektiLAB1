@@ -112,8 +112,8 @@ const MoviesPage = () => {
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
                 <option value="all">All Status</option>
-                <option value="Now Showing">Now Showing</option>
-                <option value="Coming Soon">Coming Soon</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
             </div>
           </div>

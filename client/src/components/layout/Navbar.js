@@ -58,10 +58,10 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
+                <span className="text-white font-bold text-xl">RA</span>
               </div>
               <span className="text-2xl font-bold text-white hover:text-primary-400 transition-colors">
-                CineStar
+                ReelAura
               </span>
             </Link>
           </div>

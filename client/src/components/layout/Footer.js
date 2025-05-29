@@ -14,10 +14,10 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">C</span>
               </div>
-              <span className="text-2xl font-bold text-white">CineStar</span>
+              <span className="text-2xl font-bold text-white">ReelAura</span>
             </Link>
             <p className="text-gray-400 mb-4 max-w-md">
-              Experience the magic of cinema with CineStar. We bring you the latest movies, 
+              Experience the magic of cinema with ReelAura. We bring you the latest movies, 
               comfortable seating, and unforgettable entertainment experiences.
             </p>
             <div className="flex space-x-4">
@@ -152,7 +152,7 @@ const Footer = () => {
               </div>
               <div>
                 <p className="text-white font-medium">Email</p>
-                <p className="text-gray-400 text-sm">info@cinestar.ks</p>
+                <p className="text-gray-400 text-sm">info@reelaura.ks</p>
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-dark-700 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © {currentYear} CineStar. All rights reserved.
+            © {currentYear} ReelAura. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">

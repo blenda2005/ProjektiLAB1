@@ -208,7 +208,7 @@ const MovieDetailPage = () => {
             <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl p-8 text-center">
               <h3 className="text-2xl font-bold text-white mb-4">Ready to Watch?</h3>
               <p className="text-gray-100 mb-6">
-                Book your tickets now and enjoy the ultimate cinema experience at CineStar.
+                Book your tickets now and enjoy the ultimate cinema experience at ReelAura.
               </p>
               <button
                 onClick={handleBookTicket}

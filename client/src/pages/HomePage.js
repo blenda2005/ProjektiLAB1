@@ -32,7 +32,7 @@ const HomePage = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="hero-title text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in">
-              Welcome to <span className="text-primary-400">CineStar</span>
+              Welcome to <span className="text-primary-400">ReelAura</span>
             </h1>
             <p className="hero-subtitle text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto animate-slide-up">
               Experience the magic of cinema with the latest blockbusters, comfortable seating, and premium sound quality.
@@ -86,7 +86,7 @@ const HomePage = () => {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-white">Now Showing</h2>
+            <h2 className="text-3xl font-bold text-white">Active Movies</h2>
             <Link
               to="/movies"
               className="text-primary-400 hover:text-primary-300 font-semibold flex items-center transition-colors"
@@ -106,7 +106,7 @@ const HomePage = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-400 text-lg">No movies currently showing</p>
+              <p className="text-gray-400 text-lg">No movies currently Active</p>
             </div>
           )}
         </div>
@@ -116,7 +116,7 @@ const HomePage = () => {
       <section className="py-16 bg-dark-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-white">Coming Soon</h2>
+            <h2 className="text-3xl font-bold text-white">Inactive Movies</h2>
             <Link
               to="/movies"
               className="text-primary-400 hover:text-primary-300 font-semibold flex items-center transition-colors"
@@ -136,7 +136,7 @@ const HomePage = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-400 text-lg">No upcoming movies scheduled</p>
+              <p className="text-gray-400 text-lg">No Inactive movies scheduled</p>
             </div>
           )}
         </div>
@@ -145,7 +145,7 @@ const HomePage = () => {
       {/* Features */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Why Choose CineStar?</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Why Choose ReelAura?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center card-gradient p-8 rounded-xl">
               <div className="bg-primary-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -202,7 +202,7 @@ const MovieCard = ({ movie }) => {
           />
           <div className="absolute top-2 right-2">
             <span className={`px-2 py-1 rounded text-xs font-semibold ${
-              movie.status === 'Now Showing' 
+              movie.status === 'Active' 
                 ? 'bg-green-600 text-white' 
                 : 'bg-blue-600 text-white'
             }`}>
