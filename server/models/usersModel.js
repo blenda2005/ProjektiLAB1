@@ -26,6 +26,7 @@ async function createUser(user) {
     await sql.connect(dbConfig);
 
     const {
+      username, // added username
       firstName,
       lastName,
       gender,
@@ -45,6 +46,7 @@ async function createUser(user) {
       : null;
 
     const insertUser = await new sql.Request()
+      .input("username", sql.NVarChar, username) // added username
       .input("firstName", sql.NVarChar, firstName)
       .input("lastName", sql.NVarChar, lastName)
       .input("gender", sql.NVarChar, gender)
@@ -60,9 +62,9 @@ async function createUser(user) {
       .input("createdBy", sql.NVarChar, createdBy)
       .query(`
         INSERT INTO Users 
-          (firstName, lastName, gender, date_of_birth, address, zipCode, city, phoneNumber, passwordHash, role, cinemaId, createdAt, createdBy)
+          (username, firstName, lastName, gender, date_of_birth, address, zipCode, city, phoneNumber, passwordHash, role, cinemaId, createdAt, createdBy)
         VALUES
-          (@firstName, @lastName, @gender, @date_of_birth, @address, @zipCode, @city, @phoneNumber, @passwordHash, @role, @cinemaId, @createdAt, @createdBy);
+          (@username, @firstName, @lastName, @gender, @date_of_birth, @address, @zipCode, @city, @phoneNumber, @passwordHash, @role, @cinemaId, @createdAt, @createdBy);
         SELECT SCOPE_IDENTITY() AS userId;
       `);
 
@@ -130,6 +132,7 @@ async function updateUser(id, user) {
     await sql.connect(dbConfig);
 
     const {
+      username, // added username
       firstName,
       lastName,
       gender,
@@ -151,6 +154,7 @@ async function updateUser(id, user) {
 
     await new sql.Request()
       .input("userId", sql.Int, id)
+      .input("username", sql.NVarChar, username) // added username
       .input("firstName", sql.NVarChar, firstName)
       .input("lastName", sql.NVarChar, lastName)
       .input("gender", sql.NVarChar, gender)
@@ -165,6 +169,7 @@ async function updateUser(id, user) {
       .input("updatedBy", sql.NVarChar, updatedBy)
       .query(`
         UPDATE Users SET
+          username = @username,
           firstName = @firstName,
           lastName = @lastName,
           gender = @gender,

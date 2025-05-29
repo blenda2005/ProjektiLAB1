@@ -284,7 +284,19 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Reservations_Admin  u krijua me sukses!');
 
-
+        // 17. RefreshTokens - for JWT authentication
+        await pool.request().query(`
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='RefreshTokens' AND xtype='U')
+            CREATE TABLE RefreshTokens (
+                tokenId INT PRIMARY KEY IDENTITY(1,1),
+                userId INT NOT NULL,
+                token NVARCHAR(500) NOT NULL,
+                expiresAt DATETIME NOT NULL,
+                createdAt DATETIME DEFAULT GETDATE(),
+                FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+            )
+        `);
+        console.log('Tabela RefreshTokens u krijua me sukses!');
 
     } catch (err) {
         console.error('Gabim gjatÃ« inicializimit tÃ« databazÃ«s:', err.message);

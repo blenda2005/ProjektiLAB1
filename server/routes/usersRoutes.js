@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const router = express.Router();
+const { authenticateToken, requireAdmin, requireUser } = require('../middleware/authMiddleware');
 
 const {
   createUser,
@@ -24,10 +25,13 @@ function validateRequest(req, res, next) {
 const asyncHandler = fn => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
-// CREATE USER
+// CREATE USER - Admin only
 router.post(
   '/',
+  authenticateToken,
+  requireAdmin,
   [
+    body('username').trim().notEmpty().withMessage('Username is required'), // added username validation
     body('firstName').trim().notEmpty().withMessage('First name is required'),
     body('lastName').trim().notEmpty().withMessage('Last name is required'),
     body('gender').trim().notEmpty().withMessage('Gender is required'),
@@ -54,18 +58,22 @@ router.post(
   })
 );
 
-// READ ALL USERS
+// READ ALL USERS - Admin only
 router.get(
   '/',
+  authenticateToken,
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const users = await getAllUsers();
     res.json({ data: users });
   })
 );
 
-// READ USER BY ID
+// READ USER BY ID - Authenticated users
 router.get(
   '/:id',
+  authenticateToken,
+  requireUser,
   [
     param('id').isInt({ gt: 0 }).withMessage('User ID must be a positive integer'),
     validateRequest
@@ -80,11 +88,14 @@ router.get(
   })
 );
 
-// UPDATE USER
+// UPDATE USER - Admin only
 router.put(
   '/:id',
+  authenticateToken,
+  requireAdmin,
   [
     param('id').isInt({ gt: 0 }).withMessage('User ID must be a positive integer'),
+    body('username').optional().trim(), // allow username update
     body('firstName').optional().trim(),
     body('lastName').optional().trim(),
     body('gender').optional().trim(),
@@ -106,9 +117,11 @@ router.put(
   })
 );
 
-// DELETE USER
+// DELETE USER - Admin only
 router.delete(
   '/:id',
+  authenticateToken,
+  requireAdmin,
   [
     param('id').isInt({ gt: 0 }).withMessage('User ID must be a positive integer'),
     validateRequest
