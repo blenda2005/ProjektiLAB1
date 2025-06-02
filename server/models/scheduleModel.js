@@ -21,11 +21,10 @@ async function createSchedule(schedule) {
 
     await sql.connect(dbConfig);
 
-    const sqlDate = new Date(date); // Sigurohu që date është string ose Date i vlefshëm
-    // Kontrollo formatin e kohës dhe shto sekonda nëse mungojnë
+    const sqlDate = new Date(date); 
     let sqlTime = time;
     if (typeof sqlTime === 'string' && sqlTime.length === 5) {
-      sqlTime = `${sqlTime}:00`; // 'HH:mm' -> 'HH:mm:ss'
+      sqlTime = `${sqlTime}:00`; 
     }
 
     await new sql.Request()
@@ -53,12 +52,12 @@ async function getAllSchedules() {
     const result = await pool.request().query('SELECT * FROM Schedule');
 
     const formattedData = result.recordset.map(schedule => {
-      // Formato datën: YYYY-MM-DD
+     
       const dateFormatted = schedule.date instanceof Date
         ? schedule.date.toISOString().split('T')[0]
         : schedule.date;
 
-      // Formato kohën: HH:mm
+      
       let timeFormatted = '';
       if (schedule.time) {
         if (schedule.time instanceof Date) {
@@ -100,12 +99,12 @@ async function getScheduleById(scheduleId) {
     const schedule = result.recordset[0];
     if (!schedule) return null;
 
-    // Formatimi i datës
+    
     schedule.date = schedule.date instanceof Date
       ? schedule.date.toISOString().split('T')[0]
       : schedule.date;
 
-    // Formatimi i kohës
+    
     if (schedule.time instanceof Date) {
       schedule.time = schedule.time.toTimeString().slice(0, 5);
     } else if (typeof schedule.time === 'string') {
@@ -136,7 +135,6 @@ async function updateSchedule(scheduleId, updates) {
 
     if (updates.date !== undefined) {
       setClauses.push('date = @date');
-      // Formato datën në Date objekt nëse është string
       const dateVal = updates.date instanceof Date ? updates.date : new Date(updates.date);
       request.input('date', sql.Date, dateVal);
     }
@@ -163,7 +161,7 @@ async function updateSchedule(scheduleId, updates) {
     request.input('updatedAt', sql.DateTime, new Date());
 
     if (setClauses.length === 2) {
-      // vetëm updatedBy dhe updatedAt janë të futur, pra nuk ka fusha të tjera për update
+      
       return { message: 'Nothing to update' };
     }
 
@@ -191,7 +189,7 @@ async function deleteSchedule(scheduleId) {
       .query('DELETE FROM Schedule WHERE scheduleId = @scheduleId');
     return { message: 'Schedule deleted successfully' };
   } catch (err) {
-    if (err.number === 547) {  // constraint violation (e.g. foreign key)
+    if (err.number === 547) {  
       const e = new Error('Ky orar është i lidhur me salla dhe nuk mund të fshihet.');
       e.status = 409;
       throw e;

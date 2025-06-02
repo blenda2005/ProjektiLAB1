@@ -1,5 +1,5 @@
 const sql = require('mssql'); // Importo sql veçmas
-const dbConfig = require('../config/db'); // Merr config-un
+const dbConfig = require('../config/db'); // Merr configun
 
 async function initializeDatabase() {
     try {
@@ -46,20 +46,20 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Schedule u krijua me sukses!');
 
-        // 4. Halls_Schedule
-        await pool.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Halls_Schedule' AND xtype='U')
-            CREATE TABLE Halls_Schedule (
-                hallsId INT NOT NULL,
-                scheduleId INT NOT NULL,
-                PRIMARY KEY (hallsId, scheduleId),
-                FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
-                FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE
-            )
-        `);
-        console.log('Tabela Halls_Schedule u krijua me sukses!');
+       // // 4. Halls_Schedule
+       // await pool.request().query(`
+       //     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Halls_Schedule' AND xtype='U')
+       //     CREATE TABLE Halls_Schedule (
+       //         hallsId INT NOT NULL,
+       //         scheduleId INT NOT NULL,
+       //         PRIMARY KEY (hallsId, scheduleId),
+       //         FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
+       //         FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE
+       //     )
+       // `);
+       // console.log('Tabela Halls_Schedule u krijua me sukses!');
 
-        // 5. Movie
+        // 4. Movie
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Movie' AND xtype='U')
             CREATE TABLE Movie (
@@ -82,21 +82,22 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Movie u krijua me sukses!');
 
-        // 6. Halls_Schedule_Movie
+        // 5. Halls_Schedule_Movie
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Halls_Schedule_Movie' AND xtype='U')
             CREATE TABLE Halls_Schedule_Movie (
                 hallsId INT NOT NULL,
                 scheduleId INT NOT NULL,
                 movieId INT NOT NULL,
-                PRIMARY KEY (hallsId, scheduleId, movieId),
-                FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule(hallsId, scheduleId) ON DELETE CASCADE,
+                PRIMARY KEY (hallsId, scheduleId),
+                FOREIGN KEY (hallsId) REFERENCES Halls(hallsId) ON DELETE CASCADE,
+                FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE CASCADE,
                 FOREIGN KEY (movieId) REFERENCES Movie(movieId) ON DELETE CASCADE
             )
         `);
         console.log('Tabela Halls_Schedule_Movie u krijua me sukses!');
 
-        //7. Users
+        //6. Users
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
             CREATE TABLE Users (
@@ -108,9 +109,9 @@ async function initializeDatabase() {
             address NVARCHAR(100),
             zipCode NVARCHAR(10),
             city NVARCHAR(50),
-            registration_date DATETIME DEFAULT GETDATE(),
             phoneNumber NVARCHAR(20) UNIQUE,
             passwordHash VARBINARY(255) NOT NULL,
+            role NVARCHAR(20) NOT NULL CHECK (role IN ('Admin', 'Client')),
             createdAt DATETIME DEFAULT GETDATE(),
             createdBy NVARCHAR(100),
             updatedAt DATETIME,
@@ -121,7 +122,7 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Users u krijua me sukses!');
 
-         // 8. Admin
+         // 7. Admin
          await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Admin' AND xtype='U')
             CREATE TABLE Admin (
@@ -133,7 +134,7 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Admin u krijua me sukses!');
 
-         // 9. Client
+         // 8. Client
          await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Client' AND xtype='U')
             CREATE TABLE Client (
@@ -145,7 +146,7 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Client u krijua me sukses!');
 
-         // 10. Discounts
+         // 9. Discounts
          await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Discounts' AND xtype='U')
             CREATE TABLE Discounts (
@@ -164,7 +165,7 @@ async function initializeDatabase() {
         `);
         console.log('Tabela Discounts u krijua me sukses!');
 
-         // 11. Tickets
+         // 10. Tickets
          await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Tickets' AND xtype='U')
             CREATE TABLE Tickets (
@@ -179,18 +180,15 @@ async function initializeDatabase() {
             discountId INT null,
             hallsId INT NOT NULL,
             scheduleId INT NOT NULL,
-            movieId INT NOT NULL,
-            adminId INT NULL,
             clientId INT NULL,
             FOREIGN KEY (discountId) REFERENCES Discounts(discountId),
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId),
-            FOREIGN KEY (adminId) REFERENCES Admin(adminId),
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId),
             FOREIGN KEY (clientId) REFERENCES Client(clientId)
             )
         `);
         console.log('Tabela Tickets u krijua me sukses!');
 
-        // 12. Events
+        // 13. Events
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Events' AND xtype='U')
             CREATE TABLE Events (
@@ -203,19 +201,18 @@ async function initializeDatabase() {
             status NVARCHAR(50) NOT NULL DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive')),
             hallsId INT,
             scheduleId INT,
-            movieId INT,
             discountId INT,
             createdAt DATETIME DEFAULT GETDATE(),
             createdBy NVARCHAR(100),
             updatedAt DATETIME,
             updatedBy NVARCHAR(100),
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId) ON DELETE CASCADE,
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId) ON DELETE CASCADE,
             FOREIGN KEY (discountId) REFERENCES Discounts(discountId) ON DELETE SET NULL
             )
         `);
         console.log('Tabela Events u krijua me sukses!');
 
-         // 13. Tickets_Admin
+         // 14. Tickets_Admin
          await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Tickets_Admin' AND xtype='U')
             CREATE TABLE Tickets_Admin (
@@ -249,26 +246,12 @@ async function initializeDatabase() {
             clientId INT,
             hallsId INT,
             scheduleId INT,
-            movieId INT,
             FOREIGN KEY (clientId) REFERENCES Client(clientId) ON DELETE CASCADE,
-            FOREIGN KEY (hallsId, scheduleId, movieId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId, movieId) ON DELETE CASCADE
+            FOREIGN KEY (hallsId, scheduleId) REFERENCES Halls_Schedule_Movie(hallsId, scheduleId) ON DELETE CASCADE
 
             )
         `);
         console.log('Tabela Reservations  u krijua me sukses!');
-
-          // 15. Business_Reservations 
-          await pool.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Business_Reservations' AND xtype='U')
-            CREATE TABLE Business_Reservations (
-            businessReservationId INT PRIMARY KEY IDENTITY(1,1),
-            companyName NVARCHAR(255) NOT NULL,
-            additionalRequest NVARCHAR(255),
-            reservationId INT NOT NULL,
-            FOREIGN KEY (reservationId) REFERENCES Reservations(reservationId) ON DELETE CASCADE
-            )
-        `);
-        console.log('Tabela Business_Reservations  u krijua me sukses!');
 
           // 16.  Reservations_Admin 
         await pool.request().query(`
@@ -277,7 +260,7 @@ async function initializeDatabase() {
             reservationId INT NOT NULL,
             adminId INT NOT NULL,
             createdAt DATETIME DEFAULT GETDATE(),
-            createdBy NVARCHAR(100),
+            createdBy NVARCHAR(100), 
             updatedAt DATETIME,
             updatedBy NVARCHAR(100),
             PRIMARY KEY (adminId, reservationId),

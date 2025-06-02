@@ -1,61 +1,74 @@
 const express = require('express');
 const router = express.Router();
-const {
-  createTicket,
-  getAllTickets,
-  getTicketById,
-  updateTicket,
-  deleteTicket
-} = require('../models/ticketsModel');
+const ticketsModel = require('../models/ticketsModel');
 
-// GET all tickets
-router.get('/', async (req, res) => {
-  try {
-    const tickets = await getAllTickets();
-    res.json(tickets);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch tickets', details: err.message });
-  }
-});
-
-// GET ticket by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const ticket = await getTicketById(req.params.id);
-    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-    res.json(ticket);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch ticket', details: err.message });
-  }
-});
-
-// CREATE ticket
+// CREATE
 router.post('/', async (req, res) => {
   try {
-    const result = await createTicket(req.body);
+    const result = await ticketsModel.createTicket(req.body);
     res.status(201).json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create ticket', details: err.message });
+    console.error('Gabim POST:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// UPDATE ticket
+// READ ALL
+router.get('/', async (req, res) => {
+  try {
+    const tickets = await ticketsModel.getAllTickets();
+    res.json(tickets);
+  } catch (err) {
+    console.error('Gabim GET all:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// READ ONE
+router.get('/:id', async (req, res) => {
+  const ticketId = parseInt(req.params.id);
+  try {
+    const ticket = await ticketsModel.getTicketById(ticketId);
+    res.json(ticket);
+  } catch (err) {
+    console.error('Gabim GET one:', err);
+    res.status(404).json({ error: err.message });
+  }
+});
+
+// UPDATE - PUT
 router.put('/:id', async (req, res) => {
+  const ticketId = parseInt(req.params.id);
+  const adminId = parseInt(req.query.adminId);
+
+  if (!adminId) {
+    return res.status(400).json({ error: 'adminId mungon në query param' });
+  }
+
   try {
-    const result = await updateTicket(req.params.id, req.body);
+    const result = await ticketsModel.updateTicket(ticketId, req.body, adminId);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update ticket', details: err.message });
+    console.error('Gabim PUT:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// DELETE ticket
+// DELETE - DELETE
 router.delete('/:id', async (req, res) => {
+  const ticketId = parseInt(req.params.id);
+  const adminId = parseInt(req.query.adminId);
+
+  if (!adminId) {
+    return res.status(400).json({ error: 'adminId mungon në query param' });
+  }
+
   try {
-    const result = await deleteTicket(req.params.id);
+    const result = await ticketsModel.deleteTicket(ticketId, adminId);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete ticket', details: err.message });
+    console.error('Gabim DELETE:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 

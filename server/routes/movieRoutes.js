@@ -9,7 +9,7 @@ const {
   deleteMovie
 } = require('../models/movieModel'); 
 
-// Funksion validimi për duration: pranon "HH:mm" ose "HH:mm:ss"
+
 function isValidDuration(dur) {
   return /^([0-1]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/.test(dur);
 }

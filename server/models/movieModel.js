@@ -1,7 +1,7 @@
 const sql = require('mssql/msnodesqlv8');
 const dbConfig = require('../config/db');
 
-// Formatimi i datave në 'YYYY-MM-DD HH:mm:ss'
+// Formatimi i datave 
 function formatDateTime(date) {
   if (!date) return null;
   const yyyy = date.getFullYear();
@@ -13,7 +13,7 @@ function formatDateTime(date) {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 }
 
-// Formatimi i duration si "HH:mm:ss"
+
 function formatDuration(duration) {
   if (!duration) return null;
 
@@ -36,7 +36,7 @@ function formatDuration(duration) {
   return duration;
 }
 
-// Përgatit duration para dërgimit në bazë
+
 function prepareDuration(duration) {
   if (!duration) return null;
   if (typeof duration === 'string' && duration.length === 5) {

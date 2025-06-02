@@ -1,65 +1,66 @@
 const express = require('express');
 const router = express.Router();
-const {
-  createDiscount,
-  getAllDiscounts,
-  getDiscountById,
-  updateDiscount,
-  deleteDiscount
-} = require('../models/discountsModel');
+const discountModel = require('../models/discountsModel'); 
 
-// GET all discounts
-router.get('/', async (req, res) => {
-  try {
-    const discounts = await getAllDiscounts();
-    res.json(discounts);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch discounts', details: err.message });
-  }
-});
-
-// GET discount by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const discount = await getDiscountById(req.params.id);
-    if (!discount) return res.status(404).json({ error: 'Discount not found' });
-    res.json(discount);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch discount', details: err.message });
-  }
-});
-
-// CREATE discount
+// CREATE
 router.post('/', async (req, res) => {
-  const { type, percentage, start_date, end_date, status, createdBy } = req.body;
-  if (!type || percentage === undefined || !start_date || !end_date || !createdBy) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
   try {
-    const result = await createDiscount(type, percentage, start_date, end_date, status, createdBy);
+    const discountData = req.body;
+    const result = await discountModel.createDiscount(discountData);
     res.status(201).json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create discount', details: err.message });
+    console.error(err);
+    res.status(500).json({ message: 'Gabim në krijimin e zbritjes' });
   }
 });
 
-// UPDATE discount
+// READ ALL
+router.get('/', async (req, res) => {
+  try {
+    const discounts = await discountModel.getAllDiscounts();
+    res.json(discounts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Gabim në marrjen e zbritjeve' });
+  }
+});
+
+// READ BY ID
+router.get('/:id', async (req, res) => {
+  try {
+    const discount = await discountModel.getDiscountById(parseInt(req.params.id));
+    if (!discount) {
+      return res.status(404).json({ message: 'Zbritja nuk u gjet' });
+    }
+    res.json(discount);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Gabim në marrjen e zbritjes' });
+  }
+});
+
+// UPDATE
 router.put('/:id', async (req, res) => {
   try {
-    const result = await updateDiscount(req.params.id, req.body);
-    res.json(result);
+    const discountId = parseInt(req.params.id);
+    const discountData = req.body;
+    await discountModel.updateDiscount(discountId, discountData);
+    res.json({ message: 'Zbritja u përditësua me sukses' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update discount', details: err.message });
+    console.error(err);
+    res.status(500).json({ message: 'Gabim në përditësimin e zbritjes' });
   }
 });
 
-// DELETE discount
+// DELETE
 router.delete('/:id', async (req, res) => {
   try {
-    const result = await deleteDiscount(req.params.id);
-    res.json(result);
+    const discountId = parseInt(req.params.id);
+    await discountModel.deleteDiscount(discountId);
+    res.json({ message: 'Zbritja u fshi me sukses' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete discount', details: err.message });
+    console.error(err);
+    res.status(500).json({ message: 'Gabim në fshirjen e zbritjes' });
   }
 });
 

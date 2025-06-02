@@ -10,7 +10,7 @@ const {
   deleteCinema
 } = require('../models/cinemaModel');
 
-// funksion per validimin e rezultateve nga express-validator - kontrollon gabimet
+// funksion per validimin 
 function validateRequest(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -22,7 +22,6 @@ function validateRequest(req, res, next) {
   next();
 }
 
-// per te shmangur try catch - kap qdo gabim 
 const asyncHandler = fn => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 

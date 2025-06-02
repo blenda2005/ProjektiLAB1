@@ -1,14 +1,13 @@
+
 const sql = require('mssql/msnodesqlv8');
 require('dotenv').config();
 
 const config = {
-    server: process.env.DB_SERVER,
-    database: process.env.DB_DATABASE,
-    driver: 'msnodesqlv8',
+    connectionString: 'Driver={ODBC Driver 17 for SQL Server};Server=localhost;Database=testKinema;Trusted_Connection=Yes;',
     options: {
-        trustedConnection: true,
-        trustServerCertificate: true,
+        trustServerCertificate: true
     }
 };
 
 module.exports = config;
+

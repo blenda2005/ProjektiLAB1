@@ -17,10 +17,10 @@ async function createHalls(type, name, capacity, cinemaId) {
         `);
       return { message: 'Hall created successfully' };
     } catch (err) {
-        /* FK-violation në SQL Server ka error number 547  */
+        
         if (err.number === 547) {
           const e = new Error('Kjo kinema nuk ekziston');
-          e.status = 404;              // do ta lexojmë në router
+          e.status = 404;              
           throw e;
         }
         console.error('Gabim ne createHalls:', err);

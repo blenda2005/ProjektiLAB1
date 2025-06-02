@@ -1,61 +1,72 @@
 const express = require('express');
 const router = express.Router();
-const {
-  createEvent,
-  getAllEvents,
-  getEventById,
-  updateEvent,
-  deleteEvent
-} = require('../models/eventsModel');
+const eventsModel = require('../models/eventsModel');
 
-// GET all events
-router.get('/', async (req, res) => {
-  try {
-    const events = await getAllEvents();
-    res.json(events);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch events', details: err.message });
-  }
-});
-
-// GET event by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const event = await getEventById(req.params.id);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
-    res.json(event);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch event', details: err.message });
-  }
-});
-
-// CREATE event
+// CREATE 
 router.post('/', async (req, res) => {
   try {
-    const result = await createEvent(req.body);
+    const eventData = req.body;
+    const result = await eventsModel.createEvent(eventData);
     res.status(201).json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create event', details: err.message });
+    console.error('Error creating event:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });
 
-// UPDATE event
+// READ ALL 
+router.get('/', async (req, res) => {
+  try {
+    const events = await eventsModel.getAllEvents();
+    res.json(events);
+  } catch (err) {
+    console.error('Error fetching events:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// READ BY ID 
+router.get('/:id', async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id, 10);
+    if (isNaN(eventId)) return res.status(400).json({ error: 'Invalid eventId' });
+
+    const event = await eventsModel.getEventById(eventId);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+
+    res.json(event);
+  } catch (err) {
+    console.error('Error fetching event:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// UPDATE - PUT 
 router.put('/:id', async (req, res) => {
   try {
-    const result = await updateEvent(req.params.id, req.body);
+    const eventId = parseInt(req.params.id, 10);
+    if (isNaN(eventId)) return res.status(400).json({ error: 'Invalid eventId' });
+
+    const updates = req.body;
+    const result = await eventsModel.updateEvent(eventId, updates);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update event', details: err.message });
+    console.error('Error updating event:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });
 
-// DELETE event
+// DELETE - DELETE 
 router.delete('/:id', async (req, res) => {
   try {
-    const result = await deleteEvent(req.params.id);
+    const eventId = parseInt(req.params.id, 10);
+    if (isNaN(eventId)) return res.status(400).json({ error: 'Invalid eventId' });
+
+    const result = await eventsModel.deleteEvent(eventId);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete event', details: err.message });
+    console.error('Error deleting event:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });
 
