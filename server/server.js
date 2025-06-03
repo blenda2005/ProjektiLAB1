@@ -18,6 +18,7 @@ const ticketsRoutes = require('./routes/ticketsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
 const ticketsAdminRoutes = require('./routes/tickets_AdminRoutes.js');
 const reservationsRoutes = require('./routes/reservationRoutes.js');
+const reservationsAdminRoutes = require('./routes/reservation_AdminRoutes.js');
 
 
 const app = express();
@@ -51,7 +52,7 @@ sql.connect(dbConfig)
     app.use('/api/events', eventsRoutes);
     app.use("/api/tickets-admin", ticketsAdminRoutes);
     app.use('/api/reservations', reservationsRoutes);
-
+    app.use('/api/reservations-admin', reservationsAdminRoutes);
 
 
     // per kapjen e gabimeve

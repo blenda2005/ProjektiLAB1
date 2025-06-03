@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const ticketsAdminModel = require('../models/tickets_AdminModel');
+const {
+  createTicketAdmin,
+  getAllTicketsAdmins,
+  getTicketAdminById,
+  updateTicketAdmin,
+  deleteTicketAdmin
+
+}= require('../models/tickets_AdminModel');
 
 // Create 
 router.post('/', async (req, res) => {
@@ -16,7 +23,7 @@ router.post('/', async (req, res) => {
 // Get all 
 router.get('/', async (req, res) => {
   try {
-    const result = await getAllTicketsAdmin();
+    const result = await getAllTicketsAdmins();
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -27,7 +34,7 @@ router.get('/', async (req, res) => {
 router.get('/:adminId/:ticketId', async (req, res) => {
   const { adminId, ticketId } = req.params;
   try {
-    const result = await getTicketsAdminById(parseInt(adminId), parseInt(ticketId));
+    const result = await getTicketAdminById(parseInt(adminId), parseInt(ticketId));
     res.status(200).json(result);
   } catch (err) {
     res.status(404).json({ error: err.message });
@@ -40,7 +47,7 @@ router.put('/:adminId/:ticketId', async (req, res) => {
   const data = req.body;
 
   try {
-    const result = await updateTicketsAdmin(parseInt(adminId), parseInt(ticketId), data);
+    const result = await updateTicketAdmin(parseInt(adminId), parseInt(ticketId), data);
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -52,7 +59,7 @@ router.delete('/:adminId/:ticketId', async (req, res) => {
   const { adminId, ticketId } = req.params;
 
   try {
-    const result = await deleteTicketsAdmin(parseInt(adminId), parseInt(ticketId));
+    const result = await deleteTicketAdmin(parseInt(adminId), parseInt(ticketId));
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
