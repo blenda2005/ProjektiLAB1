@@ -76,7 +76,7 @@ router.post('/register', [
     .trim()
     .isLength({ min: 1, max: 50 })
     .withMessage('Last name is required and must be less than 50 characters'),
-  body('passwordHash')
+  body('password')
     .exists({ checkFalsy: true })
     .withMessage('Password is required')
     .isLength({ min: 6 })
@@ -98,7 +98,7 @@ router.post('/register', [
       username,
       firstName,
       lastName,
-      passwordHash,
+      password,
       gender,
       date_of_birth,
       address,
@@ -123,8 +123,8 @@ router.post('/register', [
       });
     }
 
-    // Password is either from password or passwordHash field
-    const passwordRaw = passwordHash;
+    // Validate password exists
+    const passwordRaw = password;
     if (!passwordRaw) {
       return res.status(400).json({
         success: false,
@@ -133,7 +133,7 @@ router.post('/register', [
     }
     // Hash the password
     const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const passwordBuffer = Buffer.from(hashedPassword, 'utf-8');
 
     // Create the user

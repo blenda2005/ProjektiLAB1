@@ -74,8 +74,13 @@ const RegisterPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const { confirmPassword, ...userData } = formData;
-    const result = await register(userData);
+    const { confirmPassword, phone, ...userData } = formData;
+    // Map phone to phoneNumber for backend compatibility
+    const registrationData = {
+      ...userData,
+      phoneNumber: phone
+    };
+    const result = await register(registrationData);
     if (result.success) {
       navigate('/');
     }
@@ -87,11 +92,11 @@ const RegisterPage = () => {
         <div>
           <div className="flex justify-center">
             <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">C</span>
+              <span className="text-white font-bold text-2xl">RA</span>
             </div>
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-white">
-            Create your CineStar account
+            Create your ReelAura account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
             Already have an account?{' '}
