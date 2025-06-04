@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
 const { updateAdminResponsibility, getAdminByUserId, getAllAdmins } = require('../models/adminModel');
 
-// Route 
-router.get('/:userId', async (req, res) => {
+// Route
+router.get('/:userId', authenticateToken, requireAdmin, async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   if (isNaN(userId)) {
     return res.status(400).json({ error: 'Invalid userId' });
@@ -21,8 +22,8 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-//read
-router.get('/', async (req, res) => {
+//read all 
+router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const admins = await getAllAdmins();
     res.json(admins);
@@ -32,7 +33,7 @@ router.get('/', async (req, res) => {
 });
 
 
-router.put('/:userId', async (req, res) => {
+router.put('/:userId', authenticateToken, requireAdmin, async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   const { responsibility } = req.body;
 
