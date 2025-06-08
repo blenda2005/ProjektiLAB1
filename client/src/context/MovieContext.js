@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { moviesAPI, cinemasAPI, schedulesAPI } from '../services/api';
+import { moviesAPI, cinemasAPI, eventsAPI } from '../services/api';
 import { toast } from 'react-toastify';
 
 const MovieContext = createContext();
@@ -7,7 +7,7 @@ const MovieContext = createContext();
 const initialState = {
   movies: [],
   cinemas: [],
-  schedules: [],
+  events: [],
   currentMovie: null,
   isLoading: false,
   error: null,
@@ -23,8 +23,8 @@ const movieReducer = (state, action) => {
       return { ...state, movies: action.payload, isLoading: false };
     case 'SET_CINEMAS':
       return { ...state, cinemas: action.payload, isLoading: false };
-    case 'SET_SCHEDULES':
-      return { ...state, schedules: action.payload, isLoading: false };
+    case 'SET_EVENTS':
+      return { ...state, events: action.payload, isLoading: false };
     case 'SET_CURRENT_MOVIE':
       return { ...state, currentMovie: action.payload, isLoading: false };
     case 'ADD_MOVIE':
@@ -62,26 +62,102 @@ export const MovieProvider = ({ children }) => {
   };
 
   // Fetch all cinemas
-  const fetchCinemas = async () => {
+  const fetchCinemas = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await cinemasAPI.getAll();
-      dispatch({ type: 'SET_CINEMAS', payload: response.data });
+      console.log('MovieContext - Cinema API Response:', response);
+      
+      // Handle different response formats
+      let cinemasData = [];
+      if (response.data) {
+        // If wrapped in data property
+        if (Array.isArray(response.data)) {
+          cinemasData = response.data;
+        } else if (Array.isArray(response.data.data)) {
+          cinemasData = response.data.data;
+        }
+      } else if (Array.isArray(response)) {
+        // If direct array response
+        cinemasData = response;
+      }
+      
+      console.log('MovieContext - Final cinemas data:', cinemasData);
+      dispatch({ type: 'SET_CINEMAS', payload: cinemasData });
+    } catch (error) {
+      console.error('MovieContext - Error fetching cinemas:', error);
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+      dispatch({ type: 'SET_CINEMAS', payload: [] }); // Fallback to empty array
+      toast.error('Failed to fetch cinemas');
+    }
+  }, []);
+
+  // Fetch cinema by ID
+  const fetchCinemaById = useCallback(async (id) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await cinemasAPI.getById(id);
+      return response.data || response;
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
-      toast.error('Failed to fetch cinemas');
+      toast.error('Failed to fetch cinema details');
+      return null;
+    }
+  }, []);
+
+  // Create cinema
+  const createCinema = async (cinemaData) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await cinemasAPI.create(cinemaData);
+      toast.success('Cinema created successfully');
+      return { success: true };
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+      toast.error('Failed to create cinema');
+      return { success: false, error: error.message };
     }
   };
 
-  // Fetch all schedules
-  const fetchSchedules = async () => {
+  // Update cinema
+  const updateCinema = async (id, cinemaData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await schedulesAPI.getAll();
-      dispatch({ type: 'SET_SCHEDULES', payload: response.data });
+      const response = await cinemasAPI.update(id, cinemaData);
+      toast.success('Cinema updated successfully');
+      return { success: true };
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
-      toast.error('Failed to fetch schedules');
+      toast.error('Failed to update cinema');
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Delete cinema
+  const deleteCinema = async (id) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      await cinemasAPI.delete(id);
+      toast.success('Cinema deleted successfully');
+      return { success: true };
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+      toast.error('Failed to delete cinema');
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Fetch all events
+  const fetchEvents = async () => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      // Temporarily disabled to fix error
+      // const response = await eventsAPI.getAll();
+      // dispatch({ type: 'SET_EVENTS', payload: response.data });
+      dispatch({ type: 'SET_EVENTS', payload: [] }); // Set empty array for now
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+      toast.error('Failed to fetch events');
     }
   };
 
@@ -165,14 +241,18 @@ export const MovieProvider = ({ children }) => {
   useEffect(() => {
     fetchMovies();
     fetchCinemas();
-    fetchSchedules();
+    // fetchEvents(); // Temporarily disabled to fix error
   }, []);
 
   const value = {
     ...state,
     fetchMovies,
     fetchCinemas,
-    fetchSchedules,
+    fetchCinemaById,
+    createCinema,
+    updateCinema,
+    deleteCinema,
+    fetchEvents,
     fetchMovieById,
     createMovie,
     updateMovie,

@@ -17,7 +17,7 @@ import HomePage from './pages/HomePage';
 import MoviesPage from './pages/MoviesPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import CinemasPage from './pages/CinemasPage';
-import EventsPage from './pages/EventsPage';
+import SchedulePage from './pages/EventsPage';
 import BookingPage from './pages/BookingPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
@@ -27,7 +27,7 @@ import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AdminMovies from './pages/Admin/AdminMovies';
 import AdminCinemas from './pages/Admin/AdminCinemas';
-import AdminEvents from './pages/Admin/AdminEvents';
+import AdminSchedules from './pages/Admin/AdminEvents';
 import AdminReservations from './pages/Admin/AdminReservations';
 
 function App() {
@@ -44,7 +44,7 @@ function App() {
                 <Route path="/movies" element={<MoviesPage />} />
                 <Route path="/movies/:id" element={<MovieDetailPage />} />
                 <Route path="/cinemas" element={<CinemasPage />} />
-                <Route path="/events" element={<EventsPage />} />
+                <Route path="/schedule" element={<SchedulePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 
@@ -76,9 +76,9 @@ function App() {
                     <AdminCinemas />
                   </ProtectedRoute>
                 } />
-                <Route path="/admin/events" element={
+                <Route path="/admin/schedules" element={
                   <ProtectedRoute adminOnly>
-                    <AdminEvents />
+                    <AdminSchedules />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/reservations" element={
