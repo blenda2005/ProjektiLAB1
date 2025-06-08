@@ -25,6 +25,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET ALL ACTIVE EVENTS
+router.get('/active', async (req, res) => {
+  try {
+    const activeEvents = await eventsModel.getActiveEvents();
+    res.json(activeEvents);
+  } catch (err) {
+    console.error('Error getting active events:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+
 // READ BY ID 
 router.get('/:id', async (req, res) => {
   try {

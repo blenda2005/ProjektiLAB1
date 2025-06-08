@@ -62,15 +62,9 @@ async function createUser(user) {
       .input("createdBy", sql.NVarChar, createdBy)
       .query(`
         INSERT INTO Users 
-<<<<<<< HEAD
-          (firstName, lastName, gender, date_of_birth, address, zipCode, city, phoneNumber, passwordHash, role, cinemaId, createdAt, createdBy)
-        VALUES
-          (@firstName, @lastName, @gender, @date_of_birth, @address, @zipCode, @city, @phoneNumber, @passwordHash, @role, @cinemaId, @createdAt, @createdBy);
-=======
           (username, firstName, lastName, gender, date_of_birth, address, zipCode, city, phoneNumber, passwordHash, role, cinemaId, createdAt, createdBy)
         VALUES
           (@username, @firstName, @lastName, @gender, @date_of_birth, @address, @zipCode, @city, @phoneNumber, @passwordHash, @role, @cinemaId, @createdAt, @createdBy);
->>>>>>> 9dae85bc5cb65476ea106a4d46539407a4cf5b4b
         SELECT SCOPE_IDENTITY() AS userId;
       `);
 
@@ -175,11 +169,7 @@ async function updateUser(id, user) {
       .input("updatedBy", sql.NVarChar, updatedBy)
       .query(`
         UPDATE Users SET
-<<<<<<< HEAD
-=======
-          username = @username,
->>>>>>> 9dae85bc5cb65476ea106a4d46539407a4cf5b4b
-          firstName = @firstName,
+          username = @username,firstName = @firstName,
           lastName = @lastName,
           gender = @gender,
           date_of_birth = @date_of_birth,
