@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
               <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
+                <span className="text-white font-bold text-xl">R</span>
               </div>
               <span className="text-2xl font-bold text-white">ReelAura</span>
             </Link>
@@ -66,8 +66,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/schedule" className="text-gray-400 hover:text-white transition-colors">
-                  Schedule
+                <Link to="/events" className="text-gray-400 hover:text-white transition-colors">
+                  Events
                 </Link>
               </li>
               <li>
@@ -152,7 +152,7 @@ const Footer = () => {
               </div>
               <div>
                 <p className="text-white font-medium">Email</p>
-                <p className="text-gray-400 text-sm">info@reelaura.ks</p>
+                <p className="text-gray-400 text-sm">info@ReelAura.ks</p>
               </div>
             </div>
           </div>

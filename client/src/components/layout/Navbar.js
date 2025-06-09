@@ -9,10 +9,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Don't close if clicking on profile button or dropdown content
       if (!event.target.closest('.profile-dropdown')) {
         setIsProfileOpen(false);
       }
@@ -25,14 +23,12 @@ const Navbar = () => {
   }, [isProfileOpen]);
 
   const handleLogout = async () => {
-    console.log('Navbar: handleLogout called');
     try {
       await logout();
-      console.log('Navbar: logout completed, navigating to home');
       navigate('/');
       setIsProfileOpen(false);
     } catch (error) {
-      console.error('Navbar: logout error, using force logout', error);
+      // fallback if api fails
       forceLogout();
       navigate('/');
       setIsProfileOpen(false);
@@ -47,7 +43,7 @@ const Navbar = () => {
     { path: '/', label: 'Home' },
     { path: '/movies', label: 'Movies' },
     { path: '/cinemas', label: 'Cinemas' },
-    { path: '/schedule', label: 'Schedule' },
+    { path: '/events', label: 'Events' },
   ];
 
   return (
@@ -151,7 +147,6 @@ const Navbar = () => {
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Desktop logout button clicked - starting logout');
                         setIsProfileOpen(false);
                         await handleLogout();
                       }}
@@ -280,7 +275,6 @@ const Navbar = () => {
                   </Link>
                   <button
                     onClick={() => {
-                      console.log('Mobile logout button clicked');
                       handleLogout();
                       setIsOpen(false);
                     }}
